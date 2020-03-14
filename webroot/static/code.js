@@ -1,24 +1,43 @@
 const listContainer = document.querySelector('#service-list');
 let servicesRequest = new Request('/service');
+
 fetch(servicesRequest)
-.then(function(response) { return response.json(); })
-.then(function(serviceList) {
-  serviceList.forEach(service => {
-    var li = document.createElement("li");
-    li.appendChild(document.createTextNode(service.url + ': ' + service.status));
-    listContainer.appendChild(li);
-  });
+  .then(response => response.json())
+  .then(serviceList => {
+    serviceList.forEach(service => {
+      var li = document.createElement("li");
+      var deleteButton = document.createElement("button");
+      deleteButton.onclick = () => onDeleteButton(service.url);
+      deleteButton.textContent = "🗑";
+
+      li.appendChild(document.createTextNode(service.url + ': ' + service.status));
+      li.appendChild(deleteButton);
+
+      listContainer.appendChild(li);
+    });
 });
 
 const saveButton = document.querySelector('#post-service');
 saveButton.onclick = evt => {
     let urlName = document.querySelector('#url-name').value;
+
     fetch('/service', {
-    method: 'post',
+      method: 'post',
+      headers: {
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url: urlName })
+    }).then(_ => location.reload());
+}
+
+const onDeleteButton = (url) => {
+  fetch('/service', {
+    method: 'delete',
     headers: {
     'Accept': 'application/json, text/plain, */*',
     'Content-Type': 'application/json'
     },
-  body: JSON.stringify({url:urlName})
-}).then(res=> location.reload());
+    body: JSON.stringify({ url })
+  }).then(_ => location.reload());
 }

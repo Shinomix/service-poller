@@ -36,6 +36,7 @@ public class MainVerticle extends AbstractVerticle {
 
     setGetServicesRoute(router);
     setCreateServiceRoute(router);
+    setRemoveServiceRoute(router);
   }
 
   private void setCreateServiceRoute(Router router) {
@@ -74,6 +75,27 @@ public class MainVerticle extends AbstractVerticle {
           .end(new JsonArray().encode());
         }
       });
+    });
+  }
+
+  private void setRemoveServiceRoute(Router router) {
+    router.delete("/service").handler(req -> {
+      JsonObject jsonBody = req.getBodyAsJson();
+
+      services
+        .remove(jsonBody.getString("url"))
+        .setHandler(future_remove -> {
+          if (future_remove.succeeded()) {
+            req.response()
+              .putHeader("content-type", "text/plain")
+              .end("OK");
+          } else {
+            req.response()
+              .putHeader("content-type", "text/plain")
+              .setStatusCode(400)
+              .end(future_remove.cause().getMessage());
+          }
+        });
     });
   }
 
