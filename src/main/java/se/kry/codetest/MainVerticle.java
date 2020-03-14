@@ -159,13 +159,13 @@ public class MainVerticle extends AbstractVerticle {
         List<Future<JsonObject>> results = future_poll.result();
 
         results.forEach(future_object -> {
-          future_object.setHandler(future_status -> {
-            if (future_status.succeeded()) {
-              JsonObject status = future_status.result();
-              System.out.println(status);
+          future_object.setHandler(future_service -> {
+            if (future_service.succeeded()) {
+              JsonObject service = future_service.result();
+              services.update(service.getString("url"), service.getString("status"));
             }
             else {
-              future_status.cause().printStackTrace();
+              future_service.cause().printStackTrace();
             }
           });
         });

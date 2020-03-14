@@ -148,6 +148,64 @@ public class TestServices {
   }
 
   @Test
+  @DisplayName("Update a service with an empty url")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void update_service_empty_url(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx, "test"));
+    final String url = "";
+    final String status = "UNKNOWN";
+
+    testContext.verify(() -> {
+      s.update(url, status).setHandler(future_remove -> {
+        assertTrue(future_remove.failed());
+        assertEquals("empty service url", future_remove.cause().getMessage());
+
+        testContext.completeNow();
+      });
+    });
+  }
+
+  @Test
+  @DisplayName("Update a not-existing service")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void update_service_not_existing(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx, "test"));
+    final String url = "http://kry.se";
+    final String status = "UNKNOWN";
+
+    testContext.verify(() -> {
+      s.update(url, status).setHandler(future_remove -> {
+        assertTrue(future_remove.failed());
+        assertEquals("service does not exist", future_remove.cause().getMessage());
+
+        testContext.completeNow();
+      });
+    });
+  }
+
+  @Test
+  @DisplayName("Update an existing service")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void update_service_existing(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx, "test"));
+    final String url = "http://kry.se";
+    final String status = "UNKNOWN";
+    final String newStatus = "UP";
+    final String name = "KRY";
+
+    testContext.verify(() -> {
+      s.add(url, status, name).setHandler(future_pre_add -> {
+        s.update(url, newStatus).setHandler(future_remove -> {
+          assertTrue(future_remove.succeeded());
+          assertEquals(newStatus, future_remove.result().getString("status"));
+
+          testContext.completeNow();
+        });
+      });
+    });
+  }
+
+  @Test
   @DisplayName("Get all services when there is none")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void get_all_no_service(Vertx vertx, VertxTestContext testContext) {
@@ -185,7 +243,7 @@ public class TestServices {
   }
 
   @Test
-  @DisplayName("Remove a service with an empty rul")
+  @DisplayName("Remove a service with an empty url")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void remove_service_empty_url(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));

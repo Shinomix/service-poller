@@ -6,6 +6,7 @@ import java.util.List;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 
 public class Services {
   private DBConnector client;
@@ -72,6 +73,36 @@ public class Services {
       } else {
         future_query.cause().printStackTrace();
         future.fail(future_query.cause());
+      }
+    });
+
+    return future;
+  }
+
+  public Future<JsonObject> update(String url, String status) {
+    if (url == "") {
+      return Future.failedFuture("empty service url");
+    }
+    Future<JsonObject> future = Future.future();
+
+    get(url).setHandler(future_get -> {
+      if (future_get.failed() || future_get.result() == null) {
+        future.fail("service does not exist");
+      }
+      else {
+        String sql_query = String.format("UPDATE service SET status = \"%s\" WHERE url = \"%s\"", status, url);
+
+        client.query(sql_query).setHandler(future_remove -> {
+          if (future_remove.succeeded()) {
+            JsonObject updatedService = future_get.result();
+            updatedService.put("status", status);
+
+            future.complete(updatedService);
+          } else {
+            future_remove.cause().printStackTrace();
+            future.fail(future_remove.cause());
+          }
+        });
       }
     });
 
