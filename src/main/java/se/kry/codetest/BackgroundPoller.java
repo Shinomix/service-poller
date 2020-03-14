@@ -44,7 +44,7 @@ public class BackgroundPoller {
   public Future<Void> addService(JsonObject service) {
     Future<Void> future = Future.future();
     Record record = HttpEndpoint.createRecord(
-      service.getString("name"),
+      service.getString("url"),
       service.getString("url"),
       80,
       "/"
@@ -104,14 +104,14 @@ public class BackgroundPoller {
       if (response.succeeded() && response.result().statusCode() == 200) {
         future.complete(
           new JsonObject()
-            .put("name", record.getName())
+            .put("url", record.getName())
             .put("status", "UP")
         );
       }
       else {
         future.complete(
           new JsonObject()
-            .put("name", record.getName())
+            .put("url", record.getName())
             .put("status", "DOWN")
         );
       }
