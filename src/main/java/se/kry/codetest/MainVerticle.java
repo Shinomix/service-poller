@@ -10,25 +10,28 @@ import io.vertx.ext.web.handler.StaticHandler;
 import se.kry.codetest.migrate.DBMigration;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainVerticle extends AbstractVerticle {
   private DBConnector connector;
   private Services services;
-  private BackgroundPoller poller = new BackgroundPoller();
+  private BackgroundPoller poller;
 
   @Override
   public void start(Future<Void> startFuture) {
     connector = new DBConnector(vertx);
     services = new Services(connector);
 
-    runMigrations().setHandler(future_migration -> {
-      if (future_migration.succeeded()) {
-        createHttpServer(startFuture);
-      }
-      else {
-        future_migration.cause().printStackTrace();
-      }
-    });
+    runMigrations()
+      .compose(v -> initBackgroundPoller())
+      .setHandler(future_migration -> {
+        if (future_migration.succeeded()) {
+          createHttpServer(startFuture);
+        }
+        else {
+          future_migration.cause().printStackTrace();
+        }
+      });
   }
 
   private void setRoutes(Router router){
@@ -103,12 +106,29 @@ public class MainVerticle extends AbstractVerticle {
     return DBMigration.run();
   }
 
+  private Future<Void> initBackgroundPoller() {
+    Future<Void> future = Future.future();
+    poller = new BackgroundPoller(vertx);
+
+    services.getAll().setHandler(future_get_all -> {
+      if (future_get_all.succeeded()) {
+        future_get_all.result().forEach(service -> {
+          poller.addService(service);
+        });
+
+        future.complete();
+      }
+    });
+
+    return future;
+  }
+
   private Future<Void> createHttpServer(Future<Void> startFuture) {
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
     setRoutes(router);
 
-    // vertx.setPeriodic(1000 * 60, timerId -> poller.pollServices(services));
+    vertx.setPeriodic(1000 * 10, timerId -> pollServices());
 
     vertx
         .createHttpServer()
@@ -123,6 +143,29 @@ public class MainVerticle extends AbstractVerticle {
         });
 
     return startFuture;
+  }
+
+  private void pollServices() {
+    poller.pollServices().setHandler(future_poll -> {
+      if (future_poll.succeeded()) {
+        List<Future<JsonObject>> results = future_poll.result();
+
+        results.forEach(future_object -> {
+          future_object.setHandler(future_status -> {
+            if (future_status.succeeded()) {
+              JsonObject status = future_status.result();
+              System.out.println(status);
+            }
+            else {
+              future_status.cause().printStackTrace();
+            }
+          });
+        });
+      }
+      else {
+        future_poll.cause().printStackTrace();
+      }
+    });
   }
 }
 
