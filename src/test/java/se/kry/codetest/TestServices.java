@@ -37,9 +37,10 @@ public class TestServices {
   void add_service_empty_url(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx));
     final String url = "";
+    final String status = "UNKNOWN";
 
     testContext.verify(() -> {
-      s.add(url).setHandler(future_add -> {
+      s.add(url, status).setHandler(future_add -> {
         assertTrue(future_add.failed());
         assertEquals("empty service url", future_add.cause().getMessage());
 
@@ -54,9 +55,10 @@ public class TestServices {
   void add_service_new(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx));
     final String url = "http://kry.se";
+    final String status = "UNKNOWN";
 
     testContext.verify(() -> {
-      s.add(url).setHandler(future_add -> {
+      s.add(url, status).setHandler(future_add -> {
         assertTrue(future_add.succeeded());
 
         testContext.completeNow();
@@ -70,10 +72,11 @@ public class TestServices {
   void add_service_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx));
     final String url = "http://kry.se";
+    final String status = "UNKNOWN";
 
     testContext.verify(() -> {
-      s.add(url).setHandler(future_pre_add -> {
-        s.add(url).setHandler(future_add -> {
+      s.add(url, status).setHandler(future_pre_add -> {
+        s.add(url, status).setHandler(future_add -> {
           assertTrue(future_add.failed());
           assertEquals("service already exists", future_add.cause().getMessage());
 
@@ -89,9 +92,10 @@ public class TestServices {
   void get_service_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx));
     final String url = "http://kry.se";
+    final String status = "UNKNOWN";
 
     testContext.verify(() -> {
-      s.add(url).setHandler(future_pre_add -> {
+      s.add(url, status).setHandler(future_pre_add -> {
         s.get(url).setHandler(future_get -> {
           assertTrue(future_get.succeeded());
           assertEquals(url, future_get.result().getString("url"));

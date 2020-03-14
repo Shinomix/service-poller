@@ -13,7 +13,7 @@ public class Services {
     client = connector;
   }
 
-  public Future<ResultSet> add(String url) {
+  public Future<ResultSet> add(String url, String status) {
     if (url == "") {
       return Future.failedFuture("empty service url");
     }
@@ -24,7 +24,11 @@ public class Services {
         future.fail("service already exists");
       }
       else {
-        String sql_query = String.format("INSERT INTO service VALUES(\"%s\")", url);
+        String sql_query = String.format(
+          "INSERT INTO service VALUES(\"%s\", \"%s\")",
+          url,
+          status
+        );
 
         client.query(sql_query).setHandler(future_add -> {
           if (future_add.succeeded()) {
