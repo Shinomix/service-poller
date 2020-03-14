@@ -30,7 +30,7 @@ public class Services {
       else {
         Instant created_at = Instant.now();
         String sql_query = String.format(
-          "INSERT INTO service VALUES(\"%s\", \"%s\", \"%s\", \"s\")",
+          "INSERT INTO service VALUES(\"%s\", \"%s\", \"%s\", \"%s\")",
           url,
           status,
           name,
