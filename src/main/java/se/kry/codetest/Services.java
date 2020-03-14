@@ -82,4 +82,31 @@ public class Services {
 
     return future;
   }
+
+  public Future<JsonObject> remove(String url) {
+    if (url == "") {
+      return Future.failedFuture("empty service url");
+    }
+    Future<JsonObject> future = Future.future();
+
+    get(url).setHandler(future_get -> {
+      if (future_get.failed() || future_get.result() == null) {
+        future.fail("service does not exist");
+      }
+      else {
+        String sql_query = String.format("DELETE FROM service WHERE url = \"%s\"", url);
+
+        client.query(sql_query).setHandler(future_remove -> {
+          if (future_remove.succeeded()) {
+            future.complete(future_get.result());
+          } else {
+            future_remove.cause().printStackTrace();
+            future.fail(future_remove.cause());
+          }
+        });
+      }
+    });
+
+    return future;
+  }
 }

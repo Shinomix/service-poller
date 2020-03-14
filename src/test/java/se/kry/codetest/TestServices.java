@@ -158,4 +158,58 @@ public class TestServices {
       });
     });
   }
+
+  @Test
+  @DisplayName("Remove a service with an empty rul")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void remove_service_empty_url(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx, "test"));
+    final String url = "";
+
+    testContext.verify(() -> {
+      s.remove(url).setHandler(future_remove -> {
+        assertTrue(future_remove.failed());
+        assertEquals("empty service url", future_remove.cause().getMessage());
+
+        testContext.completeNow();
+      });
+    });
+  }
+
+  @Test
+  @DisplayName("Remove a not-existing service")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void remove_service_not_existing(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx, "test"));
+    final String url = "http://kry.se";
+
+    testContext.verify(() -> {
+      s.remove(url).setHandler(future_remove -> {
+        assertTrue(future_remove.failed());
+        assertEquals("service does not exist", future_remove.cause().getMessage());
+
+        testContext.completeNow();
+      });
+    });
+  }
+
+  @Test
+  @DisplayName("Remove an existing service")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void remove_service_existing(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx, "test"));
+    final String url = "http://kry.se";
+    final String status = "UNKNOWN";
+
+    testContext.verify(() -> {
+      s.add(url, status).setHandler(future_pre_add -> {
+        s.remove(url).setHandler(future_remove -> {
+          assertTrue(future_remove.succeeded());
+          assertEquals(url, future_remove.result().getString("url"));
+
+          testContext.completeNow();
+        });
+      });
+    });
+  }
 }
