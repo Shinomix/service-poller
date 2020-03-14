@@ -9,7 +9,7 @@ There is also a wishlist of features in two separate tracks - if you have time l
 
 Critical issues (required to complete the assignment):
 
-- Whenever the server is restarted, any added services disappear
+- ~Whenever the server is restarted, any added services disappear~
 - There's no way to delete individual services
 - We want to be able to name services and remember when they were added
 - The HTTP poller is not implemented

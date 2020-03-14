@@ -35,13 +35,15 @@ public class DBMigration {
   public static Future<Void> addStatusColumn() {
     Future<Void> future = Future.future();
 
+    // return complete in both case because SQlite do not handle
+    // column creation if it already exists
     client.query("ALTER TABLE service ADD status VARCHAR(128)").setHandler(done -> {
       if (done.succeeded()) {
         System.out.println("completed db migrations");
         future.complete();
       } else {
         done.cause().printStackTrace();
-        future.fail(done.cause());
+        future.complete();
       }
     });
 

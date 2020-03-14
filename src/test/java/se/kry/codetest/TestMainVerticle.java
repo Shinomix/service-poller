@@ -31,10 +31,8 @@ public class TestMainVerticle {
         .get(8080, "::1", "/service")
         .send(response -> testContext.verify(() -> {
           assertEquals(200, response.result().statusCode());
-          JsonArray body = response.result().bodyAsJsonArray();
-          assertEquals(1, body.size());
+
           testContext.completeNow();
         }));
   }
-
 }

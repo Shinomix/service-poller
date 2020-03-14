@@ -7,26 +7,87 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
+import se.kry.codetest.migrate.DBMigration;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MainVerticle extends AbstractVerticle {
-
-  private HashMap<String, String> services = new HashMap<>();
-  //TODO use this
   private DBConnector connector;
+  private Services services;
   private BackgroundPoller poller = new BackgroundPoller();
 
   @Override
   public void start(Future<Void> startFuture) {
     connector = new DBConnector(vertx);
+    services = new Services(connector);
+
+    runMigrations().setHandler(future_migration -> {
+      if (future_migration.succeeded()) {
+        createHttpServer(startFuture);
+      }
+      else {
+        future_migration.cause().printStackTrace();
+      }
+    });
+  }
+
+  private void setRoutes(Router router){
+    router.route("/*").handler(StaticHandler.create());
+
+    setGetServicesRoute(router);
+    setCreateServiceRoute(router);
+  }
+
+  private void setCreateServiceRoute(Router router) {
+    router.post("/service").handler(req -> {
+      JsonObject jsonBody = req.getBodyAsJson();
+      services
+        .add(jsonBody.getString("url"), "UNKNOWN")
+        .setHandler(future_add -> {
+          if (future_add.succeeded()) {
+            req.response()
+              .putHeader("content-type", "text/plain")
+              .end("OK");
+          } else {
+            req.response()
+              .putHeader("content-type", "text/plain")
+              .setStatusCode(400)
+              .end(future_add.cause().getMessage());
+          }
+        });
+    });
+  }
+
+  private void setGetServicesRoute(Router router) {
+    router.get("/service").handler(req -> {
+      services.getAll().setHandler(future_getall -> {
+        if (future_getall.succeeded()) {
+          List<JsonObject> jsonServices = future_getall.result();
+
+          req.response()
+            .putHeader("content-type", "application/json")
+            .end(new JsonArray(jsonServices).encode());
+        }
+        else {
+          req.response()
+          .putHeader("content-type", "application/json")
+          .end(new JsonArray().encode());
+        }
+      });
+    });
+  }
+
+  private Future<Void> runMigrations() {
+    return DBMigration.run();
+  }
+
+  private Future<Void> createHttpServer(Future<Void> startFuture) {
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
-    services.put("https://www.kry.se", "UNKNOWN");
-    vertx.setPeriodic(1000 * 60, timerId -> poller.pollServices(services));
     setRoutes(router);
+
+    // vertx.setPeriodic(1000 * 60, timerId -> poller.pollServices(services));
+
     vertx
         .createHttpServer()
         .requestHandler(router)
@@ -38,32 +99,9 @@ public class MainVerticle extends AbstractVerticle {
             startFuture.fail(result.cause());
           }
         });
-  }
 
-  private void setRoutes(Router router){
-    router.route("/*").handler(StaticHandler.create());
-    router.get("/service").handler(req -> {
-      List<JsonObject> jsonServices = services
-          .entrySet()
-          .stream()
-          .map(service ->
-              new JsonObject()
-                  .put("name", service.getKey())
-                  .put("status", service.getValue()))
-          .collect(Collectors.toList());
-      req.response()
-          .putHeader("content-type", "application/json")
-          .end(new JsonArray(jsonServices).encode());
-    });
-    router.post("/service").handler(req -> {
-      JsonObject jsonBody = req.getBodyAsJson();
-      services.put(jsonBody.getString("url"), "UNKNOWN");
-      req.response()
-          .putHeader("content-type", "text/plain")
-          .end("OK");
-    });
+    return startFuture;
   }
-
 }
 
 
