@@ -64,4 +64,22 @@ public class Services {
 
     return future;
   }
+
+  public Future<List<JsonObject>> getAll() {
+    Future<List<JsonObject>> future = Future.future();
+
+    String sql_query = String.format("SELECT * FROM service");
+    client.query(sql_query).setHandler(future_query -> {
+      if (future_query.succeeded()) {
+        List<JsonObject> rows = future_query.result().getRows();
+
+        future.complete(rows);
+      } else {
+        future_query.cause().printStackTrace();
+        future.fail(future_query.cause());
+      }
+    });
+
+    return future;
+  }
 }

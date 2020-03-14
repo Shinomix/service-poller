@@ -122,4 +122,40 @@ public class TestServices {
       });
     });
   }
+
+  @Test
+  @DisplayName("Get all services when there is none")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void get_all_no_service(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx));
+
+    testContext.verify(() -> {
+      s.getAll().setHandler(future_get -> {
+        assertTrue(future_get.succeeded());
+        assertEquals(0, future_get.result().size());
+
+        testContext.completeNow();
+      });
+    });
+  }
+
+  @Test
+  @DisplayName("Get all services when there is one or more")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void get_all_services_existing(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx));
+    final String url = "http://kry.se";
+    final String status = "UNKNOWN";
+
+    testContext.verify(() -> {
+      s.add(url, status).setHandler(future_pre_add -> {
+        s.getAll().setHandler(future_get -> {
+          assertTrue(future_get.succeeded());
+          assertEquals(1, future_get.result().size());
+
+          testContext.completeNow();
+        });
+      });
+    });
+  }
 }
