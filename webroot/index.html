@@ -6,10 +6,17 @@
 </head>
 <body>
 KRY status poller
-<ul id="service-list">
-</ul>
-<input type="text" id="service-url" placeholder="My Service">
-<input type="text" id="service-name" placeholder="http://myservice.com">
+<table id="service-list">
+    <tr>
+        <th>Name</th>
+        <th>URL</th>
+        <th>Status</th>
+        <th>Created At</th>
+        <th>Actions</th>
+    </tr>
+</table>
+<input type="text" id="service-name" placeholder="My Service">
+<input type="text" id="service-url" placeholder="http://myservice.com">
 <button id="post-service">Save</button>
 
 </body>
