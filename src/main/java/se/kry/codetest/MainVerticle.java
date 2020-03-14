@@ -49,6 +49,10 @@ public class MainVerticle extends AbstractVerticle {
         .add(jsonBody.getString("url"), "UNKNOWN", jsonBody.getString("name"))
         .setHandler(future_add -> {
           if (future_add.succeeded()) {
+            poller
+              .addService(future_add.result())
+              .setHandler(v -> System.out.println("service added to poller"));
+
             req.response()
               .putHeader("content-type", "text/plain")
               .end("OK");
@@ -89,6 +93,10 @@ public class MainVerticle extends AbstractVerticle {
         .remove(jsonBody.getString("url"))
         .setHandler(future_remove -> {
           if (future_remove.succeeded()) {
+            poller
+              .removeService(future_remove.result())
+              .setHandler(v -> System.out.println("service removed from poller"));
+
             req.response()
               .putHeader("content-type", "text/plain")
               .end("OK");

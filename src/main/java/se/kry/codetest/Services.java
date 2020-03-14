@@ -14,14 +14,14 @@ public class Services {
     client = connector;
   }
 
-  public Future<ResultSet> add(String url, String status, String name) {
+  public Future<JsonObject> add(String url, String status, String name) {
     if (url == "") {
       return Future.failedFuture("empty service url");
     }
     if (name == "") {
       return Future.failedFuture("empty service name");
     }
-    Future<ResultSet> future = Future.future();
+    Future<JsonObject> future = Future.future();
 
     get(url).setHandler(future_get -> {
       if (future_get.succeeded() && future_get.result() != null) {
@@ -39,7 +39,13 @@ public class Services {
 
         client.query(sql_query).setHandler(future_add -> {
           if (future_add.succeeded()) {
-            future.complete(future_add.result());
+            JsonObject newService = new JsonObject()
+              .put("url", url)
+              .put("name", name)
+              .put("status", status)
+              .put("created_at", created_at);
+
+              future.complete(newService);
           } else {
             future_add.cause().printStackTrace();
             future.fail(future_add.cause());

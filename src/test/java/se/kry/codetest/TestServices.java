@@ -81,6 +81,7 @@ public class TestServices {
     testContext.verify(() -> {
       s.add(url, status, name).setHandler(future_add -> {
         assertTrue(future_add.succeeded());
+        assertEquals(url, future_add.result().getString("url"));
 
         testContext.completeNow();
       });
