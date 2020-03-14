@@ -2,11 +2,10 @@ package se.kry.codetest;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
 
 public class Services {
   private DBConnector client;
@@ -22,6 +21,10 @@ public class Services {
     if (name == "") {
       return Future.failedFuture("empty service name");
     }
+    if (!Pattern.matches("[\\w\\d-_]{1,110}\\.[\\w.]{2,10}", url)) {
+      return Future.failedFuture("invalid service url format");
+    }
+
     Future<JsonObject> future = Future.future();
 
     get(url).setHandler(future_get -> {

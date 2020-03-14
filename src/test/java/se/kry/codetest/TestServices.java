@@ -1,7 +1,6 @@
 package se.kry.codetest;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -14,9 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.concurrent.TimeUnit;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(VertxExtension.class)
@@ -55,7 +52,7 @@ public class TestServices {
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void add_service_empty_name(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
     final String status = "UNKNOWN";
     final String name = "";
 
@@ -70,11 +67,30 @@ public class TestServices {
   }
 
   @Test
+  @DisplayName("Add a service with an invalid url")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void add_service_invalid_url(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx, "test"));
+    final String url = "abcd";
+    final String status = "UNKNOWN";
+    final String name = "KRY";
+
+    testContext.verify(() -> {
+      s.add(url, status, name).setHandler(future_add -> {
+        assertTrue(future_add.failed());
+        assertEquals("invalid service url format", future_add.cause().getMessage());
+
+        testContext.completeNow();
+      });
+    });
+  }
+
+  @Test
   @DisplayName("Add a new service")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void add_service_new(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
     final String status = "UNKNOWN";
     final String name = "KRY";
 
@@ -93,7 +109,7 @@ public class TestServices {
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void add_service_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
     final String status = "UNKNOWN";
     final String name = "KRY";
 
@@ -114,7 +130,7 @@ public class TestServices {
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void get_service_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
     final String status = "UNKNOWN";
     final String name = "KRY";
 
@@ -135,7 +151,7 @@ public class TestServices {
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void get_service_not_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
 
     testContext.verify(() -> {
       s.get(url).setHandler(future_get -> {
@@ -170,7 +186,7 @@ public class TestServices {
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void update_service_not_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
     final String status = "UNKNOWN";
 
     testContext.verify(() -> {
@@ -188,7 +204,7 @@ public class TestServices {
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void update_service_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
     final String status = "UNKNOWN";
     final String newStatus = "UP";
     final String name = "KRY";
@@ -226,7 +242,7 @@ public class TestServices {
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void get_all_services_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
     final String status = "UNKNOWN";
     final String name = "KRY";
 
@@ -264,7 +280,7 @@ public class TestServices {
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void remove_service_not_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
 
     testContext.verify(() -> {
       s.remove(url).setHandler(future_remove -> {
@@ -281,7 +297,7 @@ public class TestServices {
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void remove_service_existing(Vertx vertx, VertxTestContext testContext) {
     final Services s = new Services(new DBConnector(vertx, "test"));
-    final String url = "http://kry.se";
+    final String url = "kry.se";
     final String status = "UNKNOWN";
     final String name = "KRY";
 
