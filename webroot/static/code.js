@@ -19,16 +19,17 @@ fetch(servicesRequest)
 
 const saveButton = document.querySelector('#post-service');
 saveButton.onclick = evt => {
-    let urlName = document.querySelector('#url-name').value;
+  const url = document.querySelector('#service-url').value;
+  const name = document.querySelector('#service-name').value;
 
-    fetch('/service', {
-      method: 'post',
-      headers: {
-      'Accept': 'application/json, text/plain, */*',
-      'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ url: urlName })
-    }).then(_ => location.reload());
+  fetch('/service', {
+    method: 'post',
+    headers: {
+    'Accept': 'application/json, text/plain, */*',
+    'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ url, name })
+  }).then(_ => location.reload());
 }
 
 const onDeleteButton = (url) => {

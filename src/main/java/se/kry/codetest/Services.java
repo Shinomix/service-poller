@@ -1,5 +1,6 @@
 package se.kry.codetest;
 
+import java.time.Instant;
 import java.util.List;
 
 import io.vertx.core.Future;
@@ -13,9 +14,12 @@ public class Services {
     client = connector;
   }
 
-  public Future<ResultSet> add(String url, String status) {
+  public Future<ResultSet> add(String url, String status, String name) {
     if (url == "") {
       return Future.failedFuture("empty service url");
+    }
+    if (name == "") {
+      return Future.failedFuture("empty service name");
     }
     Future<ResultSet> future = Future.future();
 
@@ -24,10 +28,13 @@ public class Services {
         future.fail("service already exists");
       }
       else {
+        Instant created_at = Instant.now();
         String sql_query = String.format(
-          "INSERT INTO service VALUES(\"%s\", \"%s\")",
+          "INSERT INTO service VALUES(\"%s\", \"%s\", \"%s\", \"s\")",
           url,
-          status
+          status,
+          name,
+          created_at
         );
 
         client.query(sql_query).setHandler(future_add -> {

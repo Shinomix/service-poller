@@ -13,7 +13,9 @@ public class DBMigration {
     client = new DBConnector(vertx);
 
     return createServiceTable()
-      .compose(v -> addStatusColumn());
+      .compose(v -> addStatusColumn())
+      .compose(v -> addNameColumn())
+      .compose(v -> addCreatedAtColumn());
   }
 
   public static Future<Void> run(String environment) {
@@ -21,7 +23,9 @@ public class DBMigration {
     client = new DBConnector(vertx, environment);
 
     return createServiceTable()
-      .compose(v -> addStatusColumn());
+      .compose(v -> addStatusColumn())
+      .compose(v -> addNameColumn())
+      .compose(v -> addCreatedAtColumn());
   }
 
   public static Future<Void> createServiceTable() {
@@ -29,7 +33,7 @@ public class DBMigration {
 
     client.query("CREATE TABLE IF NOT EXISTS service (url VARCHAR(128) NOT NULL)").setHandler(done -> {
       if (done.succeeded()) {
-        System.out.println("completed db migrations");
+        System.out.println("created service table");
         future.complete();
       } else {
         done.cause().printStackTrace();
@@ -47,7 +51,43 @@ public class DBMigration {
     // column creation if it already exists
     client.query("ALTER TABLE service ADD status VARCHAR(128)").setHandler(done -> {
       if (done.succeeded()) {
-        System.out.println("completed db migrations");
+        System.out.println("added status column to service table");
+        future.complete();
+      } else {
+        done.cause().printStackTrace();
+        future.complete();
+      }
+    });
+
+    return future;
+  }
+
+  public static Future<Void> addNameColumn() {
+    Future<Void> future = Future.future();
+
+    // return complete in both case because SQlite do not handle
+    // column creation if it already exists
+    client.query("ALTER TABLE service ADD name VARCHAR(256)").setHandler(done -> {
+      if (done.succeeded()) {
+        System.out.println("added name column to service table");
+        future.complete();
+      } else {
+        done.cause().printStackTrace();
+        future.complete();
+      }
+    });
+
+    return future;
+  }
+
+  public static Future<Void> addCreatedAtColumn() {
+    Future<Void> future = Future.future();
+
+    // return complete in both case because SQlite do not handle
+    // column creation if it already exists
+    client.query("ALTER TABLE service ADD created_at DATETIME").setHandler(done -> {
+      if (done.succeeded()) {
+        System.out.println("added created_at column to service table");
         future.complete();
       } else {
         done.cause().printStackTrace();

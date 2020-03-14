@@ -38,11 +38,31 @@ public class TestServices {
     final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "";
     final String status = "UNKNOWN";
+    final String name = "KRY";
 
     testContext.verify(() -> {
-      s.add(url, status).setHandler(future_add -> {
+      s.add(url, status, name).setHandler(future_add -> {
         assertTrue(future_add.failed());
         assertEquals("empty service url", future_add.cause().getMessage());
+
+        testContext.completeNow();
+      });
+    });
+  }
+
+  @Test
+  @DisplayName("Add a service with an empty name")
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+  void add_service_empty_name(Vertx vertx, VertxTestContext testContext) {
+    final Services s = new Services(new DBConnector(vertx, "test"));
+    final String url = "http://kry.se";
+    final String status = "UNKNOWN";
+    final String name = "";
+
+    testContext.verify(() -> {
+      s.add(url, status, name).setHandler(future_add -> {
+        assertTrue(future_add.failed());
+        assertEquals("empty service name", future_add.cause().getMessage());
 
         testContext.completeNow();
       });
@@ -56,9 +76,10 @@ public class TestServices {
     final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
     final String status = "UNKNOWN";
+    final String name = "KRY";
 
     testContext.verify(() -> {
-      s.add(url, status).setHandler(future_add -> {
+      s.add(url, status, name).setHandler(future_add -> {
         assertTrue(future_add.succeeded());
 
         testContext.completeNow();
@@ -73,10 +94,11 @@ public class TestServices {
     final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
     final String status = "UNKNOWN";
+    final String name = "KRY";
 
     testContext.verify(() -> {
-      s.add(url, status).setHandler(future_pre_add -> {
-        s.add(url, status).setHandler(future_add -> {
+      s.add(url, status, name).setHandler(future_pre_add -> {
+        s.add(url, status, name).setHandler(future_add -> {
           assertTrue(future_add.failed());
           assertEquals("service already exists", future_add.cause().getMessage());
 
@@ -93,9 +115,10 @@ public class TestServices {
     final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
     final String status = "UNKNOWN";
+    final String name = "KRY";
 
     testContext.verify(() -> {
-      s.add(url, status).setHandler(future_pre_add -> {
+      s.add(url, status, name).setHandler(future_pre_add -> {
         s.get(url).setHandler(future_get -> {
           assertTrue(future_get.succeeded());
           assertEquals(url, future_get.result().getString("url"));
@@ -146,9 +169,10 @@ public class TestServices {
     final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
     final String status = "UNKNOWN";
+    final String name = "KRY";
 
     testContext.verify(() -> {
-      s.add(url, status).setHandler(future_pre_add -> {
+      s.add(url, status, name).setHandler(future_pre_add -> {
         s.getAll().setHandler(future_get -> {
           assertTrue(future_get.succeeded());
           assertEquals(1, future_get.result().size());
@@ -200,9 +224,10 @@ public class TestServices {
     final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
     final String status = "UNKNOWN";
+    final String name = "KRY";
 
     testContext.verify(() -> {
-      s.add(url, status).setHandler(future_pre_add -> {
+      s.add(url, status, name).setHandler(future_pre_add -> {
         s.remove(url).setHandler(future_remove -> {
           assertTrue(future_remove.succeeded());
           assertEquals(url, future_remove.result().getString("url"));

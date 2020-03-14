@@ -43,7 +43,7 @@ public class MainVerticle extends AbstractVerticle {
     router.post("/service").handler(req -> {
       JsonObject jsonBody = req.getBodyAsJson();
       services
-        .add(jsonBody.getString("url"), "UNKNOWN")
+        .add(jsonBody.getString("url"), "UNKNOWN", jsonBody.getString("name"))
         .setHandler(future_add -> {
           if (future_add.succeeded()) {
             req.response()
