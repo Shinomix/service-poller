@@ -16,6 +16,14 @@ public class DBMigration {
       .compose(v -> addStatusColumn());
   }
 
+  public static Future<Void> run(String environment) {
+    Vertx vertx = Vertx.vertx();
+    client = new DBConnector(vertx, environment);
+
+    return createServiceTable()
+      .compose(v -> addStatusColumn());
+  }
+
   public static Future<Void> createServiceTable() {
     Future<Void> future = Future.future();
 

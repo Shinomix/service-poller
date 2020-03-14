@@ -24,10 +24,10 @@ public class TestServices {
 
   @BeforeEach
   void create_and_empty_database(Vertx vertx, VertxTestContext testContext) {
-    DBConnector client = new DBConnector(vertx);
+    DBConnector client = new DBConnector(vertx, "test");
 
     client.query("DROP TABLE IF EXISTS service")
-          .compose(v -> DBMigration.run())
+          .compose(v -> DBMigration.run("test"))
           .setHandler(v -> testContext.completeNow());
   }
 
@@ -35,7 +35,7 @@ public class TestServices {
   @DisplayName("Add a service with an empty URL")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void add_service_empty_url(Vertx vertx, VertxTestContext testContext) {
-    final Services s = new Services(new DBConnector(vertx));
+    final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "";
     final String status = "UNKNOWN";
 
@@ -53,7 +53,7 @@ public class TestServices {
   @DisplayName("Add a new service")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void add_service_new(Vertx vertx, VertxTestContext testContext) {
-    final Services s = new Services(new DBConnector(vertx));
+    final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
     final String status = "UNKNOWN";
 
@@ -70,7 +70,7 @@ public class TestServices {
   @DisplayName("Add an already existing service")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void add_service_existing(Vertx vertx, VertxTestContext testContext) {
-    final Services s = new Services(new DBConnector(vertx));
+    final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
     final String status = "UNKNOWN";
 
@@ -90,7 +90,7 @@ public class TestServices {
   @DisplayName("Get an existing service")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void get_service_existing(Vertx vertx, VertxTestContext testContext) {
-    final Services s = new Services(new DBConnector(vertx));
+    final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
     final String status = "UNKNOWN";
 
@@ -110,7 +110,7 @@ public class TestServices {
   @DisplayName("Get a not-existing service")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void get_service_not_existing(Vertx vertx, VertxTestContext testContext) {
-    final Services s = new Services(new DBConnector(vertx));
+    final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
 
     testContext.verify(() -> {
@@ -127,7 +127,7 @@ public class TestServices {
   @DisplayName("Get all services when there is none")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void get_all_no_service(Vertx vertx, VertxTestContext testContext) {
-    final Services s = new Services(new DBConnector(vertx));
+    final Services s = new Services(new DBConnector(vertx, "test"));
 
     testContext.verify(() -> {
       s.getAll().setHandler(future_get -> {
@@ -143,7 +143,7 @@ public class TestServices {
   @DisplayName("Get all services when there is one or more")
   @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void get_all_services_existing(Vertx vertx, VertxTestContext testContext) {
-    final Services s = new Services(new DBConnector(vertx));
+    final Services s = new Services(new DBConnector(vertx, "test"));
     final String url = "http://kry.se";
     final String status = "UNKNOWN";
 

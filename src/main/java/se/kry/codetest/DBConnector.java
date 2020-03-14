@@ -9,13 +9,21 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLClient;
 
 public class DBConnector {
-
   private final String DB_PATH = "poller.db";
   private final SQLClient client;
 
-  public DBConnector(Vertx vertx){
+  public DBConnector(Vertx vertx) {
     JsonObject config = new JsonObject()
         .put("url", "jdbc:sqlite:" + DB_PATH)
+        .put("driver_class", "org.sqlite.JDBC")
+        .put("max_pool_size", 30);
+
+    client = JDBCClient.createShared(vertx, config);
+  }
+
+  public DBConnector(Vertx vertx, String environment) {
+    JsonObject config = new JsonObject()
+        .put("url", "jdbc:sqlite:" + environment + "_" + DB_PATH)
         .put("driver_class", "org.sqlite.JDBC")
         .put("max_pool_size", 30);
 
